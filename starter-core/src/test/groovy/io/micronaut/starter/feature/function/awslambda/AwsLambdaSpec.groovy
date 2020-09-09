@@ -168,7 +168,7 @@ class AwsLambdaSpec extends BeanContextSpec implements CommandOutputFixture {
     }
 
     @Unroll
-    void 'Application file is NOT generated for a default application type with gradle and features aws-lambda for language: #language'(Language language, String extension) {
+    void 'Application file is generated for a default application type with gradle and features aws-lambda for language: #language'(Language language, String extension) {
         when:
         def output = generate(
                 ApplicationType.DEFAULT,
@@ -177,14 +177,14 @@ class AwsLambdaSpec extends BeanContextSpec implements CommandOutputFixture {
         )
 
         then:
-        !output.containsKey("${language.srcDir}/example/micronaut/Application.${extension}".toString())
+        output.containsKey("${language.srcDir}/example/micronaut/Application.${extension}".toString())
 
         when:
         def buildGradle = output['build.gradle']
 
         then:
         !buildGradle.contains('id "application"')
-        !buildGradle.contains('mainClassName')
+        buildGradle.contains('mainClassName')
         buildGradle.contains('id "io.micronaut.application"')
 
         where:
@@ -193,7 +193,7 @@ class AwsLambdaSpec extends BeanContextSpec implements CommandOutputFixture {
     }
 
     @Unroll
-    void 'Application file is NOT generated for a default application type with gradle and features aws-lambda and graalvm for language: #language'(Language language, String extension) {
+    void 'Application file is generated for a default application type with gradle and features aws-lambda and graalvm for language: #language'(Language language, String extension) {
         when:
         def output = generate(
                 ApplicationType.DEFAULT,
@@ -202,13 +202,7 @@ class AwsLambdaSpec extends BeanContextSpec implements CommandOutputFixture {
         )
 
         then:
-        !output.containsKey("${language.srcDir}/example/micronaut/Application.${extension}".toString())
-
-        when:
-        def buildGradle = output['build.gradle']
-
-        then:
-        buildGradle.contains('mainClassName = "io.micronaut.function.aws.runtime.MicronautLambdaRuntime"')
+        output.containsKey("${language.srcDir}/example/micronaut/Application.${extension}".toString())
 
         where:
         language << graalSupportedLanguages()
@@ -216,7 +210,7 @@ class AwsLambdaSpec extends BeanContextSpec implements CommandOutputFixture {
     }
 
     @Unroll
-    void 'Application file is NOT generated for a default application type with gradle and features aws-lambda and aws-lambda-custom-runtime for language: #language'(Language language, String extension) {
+    void 'Application file is generated for a default application type with gradle and features aws-lambda and aws-lambda-custom-runtime for language: #language'(Language language, String extension) {
         when:
         def output = generate(
                 ApplicationType.DEFAULT,
@@ -282,7 +276,7 @@ class AwsLambdaSpec extends BeanContextSpec implements CommandOutputFixture {
 
         then:
         build.contains('runtime "lambda"')
-        build.contains('implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")')
+        !build.contains('implementation("io.micronaut.aws:micronaut-function-aws-custom-runtime")')
         !build.contains('implementation "io.micronaut:micronaut-http-server-netty"')
         !build.contains('implementation "io.micronaut:micronaut-http-client"')
 
@@ -309,8 +303,8 @@ class AwsLambdaSpec extends BeanContextSpec implements CommandOutputFixture {
 
         then:
         !build.contains('<artifactId>micronaut-function-aws-custom-runtime</artifactId>')
-        !build.contains('<exec.mainClass>')
-        !build.contains('</exec.mainClass>')
+        build.contains('<exec.mainClass>')
+        build.contains('</exec.mainClass>')
         !build.contains('<artifactId>micronaut-http-server-netty</artifactId>')
         !build.contains('<artifactId>micronaut-http-client</artifactId>')
         build.contains('<artifactId>micronaut-function-aws-api-proxy</artifactId>')
